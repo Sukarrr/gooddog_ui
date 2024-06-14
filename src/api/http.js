@@ -1,12 +1,33 @@
 // 封装通用请求
 import axios from 'axios'
 import router from '../router'
+import storage from '../store/index'
 axios.defaults.timeout = 5000 // 超时时间：5s
 axios.defaults.withCredentials = true// 允许跨域
 // Content-Type 响应头
 axios.defaults.headers.post['Content-Type'] = 'application/json; charset=utf-8'
 // 访问基础url
 axios.defaults.baseURL = 'http://localhost:8080'
+
+// 请求拦截器
+axios.interceptors.request.use(
+  config => {
+    console.log('req headers:', config.headers)
+    if (!config.headers.Authorization) {
+      if (storage.getToken() === null) {
+        router.replace({
+          path: '/login'
+        })
+      } else {
+        config.headers['Authorization'] = 'Bearer ' + storage.getToken()
+      }
+    }
+    return config
+  },
+  error => {
+    return Promise.reject(error)
+  }
+)
 
 // 响应拦截器
 axios.interceptors.response.use(
@@ -25,10 +46,7 @@ axios.interceptors.response.use(
       switch (error.response.status) {
         case 401: // 未登录
           router.replace({
-            path: '/',
-            query: {
-              redirect: router.currentRoute.fullPath // 存之前访问地址
-            }
+            path: '/login'
           })
           break
         case 404: // not found
@@ -57,9 +75,9 @@ export function get (url, params = {}) {
 /**
  * 封装post请求
  */
-export function post (url, data = {}) {
+export function post (url, data = {}, config = {}) {
   return new Promise((resolve, reject) => {
-    axios.post(url, data)
+    axios.post(url, data, config)
       .then(response => {
         resolve(response.data)
       })

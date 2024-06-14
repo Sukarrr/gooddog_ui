@@ -1,7 +1,11 @@
 <template>
   <el-container>
+    <h2 style="text-align: center;">三国交易网</h2>
     <el-header>
-      <h2>GoodDog</h2>
+      <div class="login">
+        <p v-if="loginUser !== ''">已登录管理员账户</p>
+        <el-button v-else icon="el-icon-user-solid" size="mini" boarder="none" @click.native="handleLogin">管理员登录</el-button>
+      </div>
     </el-header>
     <el-main>
       <el-container style="display: flex; border: 1px solid #eee">
@@ -9,6 +13,9 @@
           <div class="filter">
             服务器选择:
             <el-radio-group v-model="selectedServer">
+              <el-radio-button label="all">
+                所有服务器
+              </el-radio-button>
               <el-radio-button
                 v-for="server in servers"
                 :key="server.id"
@@ -45,9 +52,10 @@
           <div class="items" id="items">
             <ul>
               <li v-for="info in filteredInfos" :key="info.id">
-                <img :src="imgDomain + info.img_uri" alt="">
+                <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]"></el-image>
                 <h1><b>¥{{ info.price }}</b></h1>
                 <p>{{ info.name }}</p>
+                <p>{{ info.seller_id }}</p>
                 <p>{{ info.create_at.substr(0, 10) }}</p>
               </li>
             </ul>
@@ -61,34 +69,33 @@
 <script>
 import {getAllItems} from '../api/index'
 import {Servers, Tools} from '../../static/data'
+import storage from '../store/index'
 
 export default {
   name: 'Home',
   data () {
     return {
+      loginUser: '',
       selectedServer: 'all',
       servers: Servers,
       selectedTool: [],
       orderBy: 2,
       tools: Tools,
       infos: [],
-      filteredInfos: [
-        // {
-        //   id: 7,
-        //   img_uri: '59e3e55e5fddaa4988af12a2bfcfaa80/827158828_UTIN.jpg',
-        //   price: 20.5,
-        //   server_id: 333,
-        //   tool_id: 444
-        // }
-      ],
+      filteredInfos: [],
       imgDomain: 'http://localhost:8080/api/v1/image/'
     }
   },
   created () {
+    console.log('created route: ', this.$route.params)
+    if (storage.getUsername()) {
+      this.loginUser = storage.getUsername()
+    }
     this.fetchInfos()
   },
   methods: {
     fetchInfos () {
+      console.log('fetchInfos loginUser: ', this.loginUser)
       getAllItems('create_at', 'desc')
         .then(res => {
           this.infos = res.data
@@ -129,7 +136,9 @@ export default {
             return b.price - a.price
         }
       })
-      console.log('filteredInfos: ', this.filteredInfos)
+    },
+    handleLogin () {
+      this.$router.push({name: `Login`})
     }
   },
   watch: {
@@ -142,14 +151,10 @@ export default {
 </script>
 
 <style scoped>
-.container {
+.login {
   display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-}
-
-.el-aside {
-  color: #333;
+  justify-content: flex-end;
+  margin-right: 20px;
 }
 
 .order {
@@ -194,7 +199,7 @@ export default {
   border: 1px solid #eee;
 }
 
-.items img {
+.el-image {
   width: 200px;
   height: 150px;
 }

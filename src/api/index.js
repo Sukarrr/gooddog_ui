@@ -1,4 +1,4 @@
-import {get} from './http'
+import {get, post} from './http'
 
 // 根据指定排序查询所有商品列表
 export const getAllItems = (orderBy, orderType) => get(`api/v1/items/info?order_by=${orderBy}&order_type=${orderType}`)
@@ -12,8 +12,15 @@ export const getAllItems = (orderBy, orderType) => get(`api/v1/items/info?order_
 //   }
 // }
 
-// 新增收藏【post请求】
-// export const setCollect = (params) => post(`collect/add`, params);
+// 新增商品【post请求】
+export const createItem = (params) => post(`api/v1/items/create`, params, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+})
+
+// login
+export const login = (params) => post(`api/v1/users/login`, params)
 
 // 下载音乐【异步请求】
 // export const download = (url) => Axios({

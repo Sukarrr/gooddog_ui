@@ -1,5 +1,4 @@
 export const Servers = [
-  {id: 'all', name: '所有服务器'},
   {id: '1', name: '桃园结义'},
   {id: '2', name: '群雄逐鹿'},
   {id: '3', name: '得陇望蜀'},
