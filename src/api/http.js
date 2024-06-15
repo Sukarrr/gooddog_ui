@@ -11,14 +11,27 @@ axios.defaults.baseURL = 'http://localhost:8080'
 
 // 请求拦截器
 axios.interceptors.request.use(
-  config => {
-    console.log('req headers:', config.headers)
-    if (!config.headers.Authorization) {
-      if (storage.getToken() === null) {
+  async config => {
+    if (config.url === 'api/v1/token/refresh') {
+      return config
+    }
+    if (storage.getRefreshToken() !== null &&
+      storage.getTokenExpire() &&
+      new Date().getTime() - Number(storage.getTokenExpire()) > 1000) {
+      console.log('refresh token: ', config.url)
+      await get('api/v1/token/refresh', {headers: {Authorization: 'Bearer ' + storage.getRefreshToken()}}).then(res => {
+        storage.setToken(res.data)
+        storage.setTokenExpire(String(new Date().getTime()))
+        config.headers['Authorization'] = 'Bearer ' + storage.getToken()
+      }).catch(err => {
+        console.log('refresh token err: ', err)
         router.replace({
           path: '/login'
         })
-      } else {
+      })
+    }
+    if (!config.headers.Authorization) {
+      if (storage.getToken() !== null) {
         config.headers['Authorization'] = 'Bearer ' + storage.getToken()
       }
     }
@@ -40,19 +53,14 @@ axios.interceptors.response.use(
       return Promise.reject(response)
     }
   },
-  error => {
-    if (error.response.status) {
-      // 根据访问失败返回的状态码，分别做不同的处理
-      switch (error.response.status) {
-        case 401: // 未登录
-          router.replace({
-            path: '/login'
-          })
-          break
-        case 404: // not found
-          break
+  response => {
+    if (response.response.status) {
+      if (response.response.status === 401) {
+        router.replace({
+          path: '/login'
+        })
       }
-      return Promise.reject(error.response)
+      return Promise.reject(response.response)
     }
   }
 )
@@ -60,9 +68,9 @@ axios.interceptors.response.use(
 /**
  * 封装get请求
  */
-export function get (url, params = {}) {
+export function get (url, config = {}) {
   return new Promise((resolve, reject) => {
-    axios.get(url, {params: params})
+    axios.get(url, config)
       .then(response => {
         resolve(response.data)
       })

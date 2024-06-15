@@ -55,14 +55,18 @@ export default {
       }
     }
   },
+  created () {
+    storage.logout()
+  },
   mounted () {
   },
   methods: {
     login () {
-      console.log(this.form)
       login(this.form)
         .then(res => {
-          storage.setToken(res.data)
+          storage.setToken(res.data.token)
+          storage.setTokenExpire(String(new Date().getTime()))
+          storage.setRefreshToken(res.data.refresh_token)
           storage.setUsername(this.form.username)
           this.$router.push({name: `Home`})
         })

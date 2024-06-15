@@ -1,6 +1,9 @@
 <template>
   <div class="tab-container">
     <div>
+      <div>
+        <i class="el-icon-s-home" @click="$router.push({name: `Home`})"></i>
+      </div>
       <el-form
         :model="formData"
         ref="dataForm"
@@ -48,11 +51,11 @@
             <div slot="tip" class="el-upload__tip">不超过500kb</div>
           </el-upload>
         </el-form-item>
+        <el-form-item>
+          <el-button @click=" handleClear() ">清空</el-button>
+          <el-button type="primary" @click=" createData() ">确定</el-button>
+        </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click=" handleClear() ">清空</el-button>
-        <el-button type="primary" @click=" createData() ">确定</el-button>
-      </div>
     </div>
   </div>
 </template>
@@ -110,19 +113,24 @@ export default {
       fd.append('name', that.formData.name)
       fd.append('file', that.formData.file)
       console.log('formData ', this.formData)
-      const res = createItem(fd)
-      if (res.data === 'OK') {
+      createItem(fd).then(res => {
+        if (res.data === 'OK') {
+          this.$message({
+            type: 'info',
+            message: '保存成功'
+          })
+          this.handleClear()
+        } else {
+          this.$message({
+            type: 'error',
+            message: '保存失败'
+          })
+        }
+      }).catch(err => {
         this.$message({
-          type: 'info',
-          message: '保存成功'
+          type: 'error',
+          message: '保存失败: ' + err.message
         })
-        this.handleClear()
-        return
-      }
-      console.log(res)
-      this.$message({
-        type: 'error',
-        message: '保存失败'
       })
     },
     beforeUpload (file) {
@@ -156,5 +164,13 @@ export default {
 <style scoped>
 .tab-container {
   margin: 30px;
+}
+
+.el-icon-s-home {
+  display: flex;
+  justify-content: flex-start;
+  margin-right: 20px;
+  margin-top: 20px;
+  font-size: 30px;
 }
 </style>

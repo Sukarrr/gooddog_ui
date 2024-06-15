@@ -19,6 +19,14 @@ export const createItem = (params) => post(`api/v1/items/create`, params, {
   }
 })
 
+export const updateItem = (params) => post(`api/v1/items/update`, params, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+})
+
+export const deleteItem = (params) => post(`api/v1/items/delete`, params)
+
 // login
 export const login = (params) => post(`api/v1/users/login`, params)
 
