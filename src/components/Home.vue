@@ -1,120 +1,124 @@
 <template>
-  <el-container>
-    <h2 style="text-align: center;">三国交易网</h2>
-    <el-header>
-      <div v-if="loginUser !== ''" class="login"><p>管理员 {{loginUser}}</p></div>
-      <div class="login">
-        <el-button v-if="loginUser !== ''" size="mini" @click.native="handleLogOut">退出</el-button>
-        <el-button v-else icon="el-icon-user-solid" size="mini" border="none" @click.native="handleLogin">管理员登录</el-button>
-      </div>
-    </el-header>
-    <el-main>
-      <el-container style="border: 1px solid #eee">
-        <el-header class="header">
-          <el-form ref="dataForm" label-position="left" label-width="90px">
-            <el-form-item label="服务器选择:" prop="server" class="filter">
-              <el-radio-group v-model="selectedServer">
-                <el-radio-button label="all">所有服务器</el-radio-button>
-                <el-radio-button v-for="server in servers" :key="server.id" :label="server.id">{{server.name}}</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="道具选择:" prop="tool" class="filter">
-              <el-cascader v-model="selectedTool" :options="tools" :props="{ expandTrigger: 'hover' }" @change="filterInfos" clearable filterable></el-cascader>
-            </el-form-item>
-          </el-form>
-        </el-header>
-        <el-main>
-          <div class="upload">
-            <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="toUpload">新增商品</el-button>
-          </div>
-          <div class="order">
-            <el-button-group>
-              <el-button v-for="item in orderByOptions" :key="item.value" :type="orderBy === item.value ? 'primary' : 'default'" size="mini" @click="orderBy = orderBy === item.value ? 0 : item.value">
-                {{ item.label }}
-                <i v-if="item.value === 1 || item.value === 3" class="el-icon-arrow-up"></i>
-                <i v-else class="el-icon-arrow-down"></i>
-              </el-button>
-            </el-button-group>
-          </div>
-          <div class="items">
-            <ul>
-              <li v-for="info in filteredInfos" :key="info.id">
-                <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]" class="info_img"></el-image>
-                <h1><b>¥{{ info.price }}</b></h1>
-                <p>{{ info.name }}</p>
-                <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="editInfo(info)">编辑</el-button>
-                <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="deleteInfo(info.id)">删除</el-button>
-                <el-button v-else type="primary" size="mini" @click.native="showInfo(info)">查看详情</el-button>
-              </li>
-            </ul>
-          </div>
-          <el-dialog title="商品详情" :visible.sync="showDialog" :lock-scroll="false" :append-to-body="true" :max-height="'90vh'">
-            <div class="dialog-content">
-              <div class="detail-left">
-                <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px">
-                  <el-form-item label="商品名" prop="name">
-                    <el-input v-model="formData.name" disabled />
-                  </el-form-item>
-                  <el-form-item label="卖家 id" prop="seller_id">
-                    <el-input v-model="formData.seller_id" disabled />
-                  </el-form-item>
-                  <el-form-item label="价格" prop="price">
-                    <el-input v-model="formData.price" disabled />
-                  </el-form-item>
-                  <el-form-item label="道具">
-                    <el-cascader v-model="formData.tool_id" :options="tools" :props="{ expandTrigger: 'hover' }" disabled clearable filterable></el-cascader>
-                  </el-form-item>
-                  <el-form-item label="服务器">
-                    <el-input v-model="serversMap[formData.server_id]" disabled />
-                  </el-form-item>
-                  <el-form-item label="发布时间">
-                    <el-input v-model="formData.create_at" disabled />
-                  </el-form-item>
-                </el-form>
-              </div>
-              <div class="detail-right">
-                <el-image :src="imgDomain + formData.img_uri" :preview-src-list="[imgDomain + formData.img_uri]" style="width: 100%; height: auto; border: 1px solid #ccc;"></el-image>
-              </div>
-            </div>
-            <span slot="footer" class="dialog-footer">
-              <el-button type="primary" @click="showDialog = false">取消</el-button>
-            </span>
-          </el-dialog>
-          <el-dialog title="编辑商品" :visible.sync="editDialogVisible" :lock-scroll="false" :append-to-body="true">
-            <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left: 50px;">
-              <el-form-item label="商品名" prop="name">
-                <el-input v-model="formData.name" />
+  <div class="container">
+    <!-- Logo -->
+    <img src="../assets/logo.png" alt="Logo" class="logo">
+    <el-container>
+      <h2 style="text-align: center;">三国交易网</h2>
+      <el-header>
+        <div v-if="loginUser !== ''" class="login"><p>管理员 {{loginUser}}</p></div>
+        <div class="login">
+          <el-button v-if="loginUser !== ''" size="mini" @click.native="handleLogOut">退出</el-button>
+          <el-button v-else icon="el-icon-user-solid" size="mini" border="none" @click.native="handleLogin">管理员登录</el-button>
+        </div>
+      </el-header>
+      <el-main>
+        <el-container style="border: 1px solid #eee">
+          <el-header class="header">
+            <el-form ref="dataForm" label-position="left" label-width="90px">
+              <el-form-item label="服务器选择:" prop="server" class="filter">
+                <el-menu mode="horizontal" default-active="all" @select="handleServerSelect">
+                  <el-menu-item index="all">所有服务器</el-menu-item>
+                  <el-menu-item v-for="server in servers" :key="server.id" :index="server.id">{{server.name}}</el-menu-item>
+                </el-menu>
               </el-form-item>
-              <el-form-item label="卖家 id" prop="seller_id">
-                <el-input v-model="formData.seller_id" />
-              </el-form-item>
-              <el-form-item label="价格" prop="price">
-                <el-input v-model="formData.price" />
-              </el-form-item>
-              <el-form-item label="道具">
-                <el-cascader v-model="formData.tool_id" :options="tools" :props="{ expandTrigger: 'hover' }" clearable filterable></el-cascader>
-              </el-form-item>
-              <el-form-item label="服务器">
-                <el-radio-group v-model="formData.server_id">
-                  <el-radio-button v-for="server in servers" :key="server.id" :label="server.id">{{ server.name }}</el-radio-button>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item label="发布时间">
-                <el-input v-model="formData.create_at" disabled />
-              </el-form-item>
-              <el-form-item label="更新时间">
-                <el-input v-model="formData.update_at" disabled />
-              </el-form-item>
-              <el-form-item>
-                <el-button @click="handleClear">清空</el-button>
-                <el-button type="primary" @click="updateData">确定</el-button>
+              <el-form-item label="道具选择:" prop="tool" class="filter">
+                <el-cascader v-model="selectedTool" :options="tools" :props="{ expandTrigger: 'hover' }" @change="filterInfos" clearable filterable></el-cascader>
               </el-form-item>
             </el-form>
-          </el-dialog>
-        </el-main>
-      </el-container>
-    </el-main>
-  </el-container>
+          </el-header>
+          <el-main>
+            <div class="upload">
+              <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="toUpload">新增商品</el-button>
+            </div>
+            <div class="order">
+              <el-button-group>
+                <el-button v-for="item in orderByOptions" :key="item.value" :type="orderBy === item.value ? 'primary' : 'default'" size="mini" @click="orderBy = orderBy === item.value ? 0 : item.value">
+                  {{ item.label }}
+                  <i v-if="item.value === 1 || item.value === 3" class="el-icon-arrow-up"></i>
+                  <i v-else class="el-icon-arrow-down"></i>
+                </el-button>
+              </el-button-group>
+            </div>
+            <div class="items">
+              <ul>
+                <li v-for="info in filteredInfos" :key="info.id">
+                  <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]" class="info_img"></el-image>
+                  <h1><b>¥{{ info.price }}</b></h1>
+                  <p>{{ info.name }}</p>
+                  <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="editInfo(info)">编辑</el-button>
+                  <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="deleteInfo(info.id)">删除</el-button>
+                  <el-button v-else type="primary" size="mini" @click.native="showInfo(info)">查看详情</el-button>
+                </li>
+              </ul>
+            </div>
+            <el-dialog title="商品详情" :visible.sync="showDialog" :lock-scroll="false" :append-to-body="true" :max-height="'90vh'">
+              <div class="dialog-content">
+                <div class="detail-left">
+                  <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px">
+                    <el-form-item label="商品名" prop="name">
+                      <el-input v-model="formData.name" disabled />
+                    </el-form-item>
+                    <el-form-item label="卖家 id" prop="seller_id">
+                      <el-input v-model="formData.seller_id" disabled />
+                    </el-form-item>
+                    <el-form-item label="价格" prop="price">
+                      <el-input v-model="formData.price" disabled />
+                    </el-form-item>
+                    <el-form-item label="道具">
+                      <el-cascader v-model="formData.tool_id" :options="tools" :props="{ expandTrigger: 'hover' }" disabled clearable filterable></el-cascader>
+                    </el-form-item>
+                    <el-form-item label="服务器">
+                      <el-input v-model="serversMap[formData.server_id]" disabled />
+                    </el-form-item>
+                    <el-form-item label="发布时间">
+                      <el-input v-model="formData.create_at" disabled />
+                    </el-form-item>
+                  </el-form>
+                </div>
+                <div class="detail-right">
+                  <el-image :src="imgDomain + formData.img_uri" :preview-src-list="[imgDomain + formData.img_uri]" style="width: 100%; height: auto; border: 1px solid #ccc;"></el-image>
+                </div>
+              </div>
+              <span slot="footer" class="dialog-footer">
+              <el-button type="primary" @click="showDialog = false">取消</el-button>
+            </span>
+            </el-dialog>
+            <el-dialog title="编辑商品" :visible.sync="editDialogVisible" :lock-scroll="false" :append-to-body="true">
+              <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left: 50px;">
+                <el-form-item label="商品名" prop="name">
+                  <el-input v-model="formData.name" />
+                </el-form-item>
+                <el-form-item label="卖家 id" prop="seller_id">
+                  <el-input v-model="formData.seller_id" />
+                </el-form-item>
+                <el-form-item label="价格" prop="price">
+                  <el-input v-model="formData.price" />
+                </el-form-item>
+                <el-form-item label="道具">
+                  <el-cascader v-model="formData.tool_id" :options="tools" :props="{ expandTrigger: 'hover' }" clearable filterable></el-cascader>
+                </el-form-item>
+                <el-form-item label="服务器">
+                  <el-radio-group v-model="formData.server_id">
+                    <el-radio-button v-for="server in servers" :key="server.id" :label="server.id">{{ server.name }}</el-radio-button>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="发布时间">
+                  <el-input v-model="formData.create_at" disabled />
+                </el-form-item>
+                <el-form-item label="更新时间">
+                  <el-input v-model="formData.update_at" disabled />
+                </el-form-item>
+                <el-form-item>
+                  <el-button @click="handleClear">清空</el-button>
+                  <el-button type="primary" @click="updateData">确定</el-button>
+                </el-form-item>
+              </el-form>
+            </el-dialog>
+          </el-main>
+        </el-container>
+      </el-main>
+    </el-container>
+  </div>
 </template>
 
 <script>
@@ -179,6 +183,10 @@ export default {
         .catch(err => {
           console.log(err)
         })
+    },
+    handleServerSelect (index) {
+      this.selectedServer = index
+      this.filterInfos()
     },
     filterInfos () {
       const server = this.selectedServer
@@ -335,6 +343,18 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  padding: 20px; /* 设置整体内边距 */
+}
+
+.logo {
+  position: absolute; /* 绝对定位，使得 logo 在左上角 */
+  top: 20px; /* 距离顶部距离 */
+  left: 20px; /* 距离左侧距离 */
+  width: 100px; /* Logo 宽度 */
+  height: auto; /* 自适应高度 */
+}
+
 .login {
   display: flex;
   justify-content: flex-end;
