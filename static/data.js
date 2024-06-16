@@ -180,13 +180,5 @@ export const Tools = [
       {value: '87', label: '游侠'},
       {value: '88', label: '唤灵'}
     ]
-  },
-  {
-    value: 'bbb',
-    label: 'Tool bbb',
-    children: [
-      {value: '333', label: 'SubTool 333'},
-      {value: '444', label: 'SubTool 444'}
-    ]
   }
 ]
