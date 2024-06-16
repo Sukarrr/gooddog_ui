@@ -17,7 +17,7 @@ axios.interceptors.request.use(
     }
     if (storage.getRefreshToken() !== null &&
       storage.getTokenExpire() &&
-      new Date().getTime() - Number(storage.getTokenExpire()) > 1000) {
+      new Date().getTime() - Number(storage.getTokenExpire()) > 1000 * 60 * 60) {
       console.log('refresh token: ', config.url)
       await get('api/v1/token/refresh', {headers: {Authorization: 'Bearer ' + storage.getRefreshToken()}}).then(res => {
         storage.setToken(res.data)

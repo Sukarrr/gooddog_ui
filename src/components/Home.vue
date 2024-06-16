@@ -57,7 +57,7 @@
           <div class="items" id="items">
             <ul>
               <li v-for="info in filteredInfos" :key="info.id">
-                <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]"></el-image>
+                <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]" class="info_img"></el-image>
                 <h1><b>¥{{ info.price }}</b></h1>
                 <p>{{ info.name }}</p>
                 <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="editInfo(info)">编辑</el-button>
@@ -66,43 +66,48 @@
               </li>
             </ul>
           </div>
-          <el-dialog title="商品详情" :visible.sync="showDialog">
-            <el-form
-              :model="formData"
-              ref="dataForm"
-              label-position="left"
-              label-width="90px"
-              style="width: 400px; margin-left:50px;"
-            >
-              <el-form-item label="商品名" prop="name">
-                <el-input v-model="formData.name" :disabled="true"/>
-              </el-form-item>
-              <el-form-item label="卖家 id" prop="seller_id">
-                <el-input v-model="formData.seller_id" :disabled="true"/>
-              </el-form-item>
-              <el-form-item label="价格" prop="price">
-                <el-input v-model="formData.price" :disabled="true"/>
-              </el-form-item>
-              <el-form-item label="道具">
-                <el-cascader
-                  v-model="formData.tool_id"
-                  :options="tools"
-                  :props="{ expandTrigger: 'hover' }"
-                  :disabled="true" clearable filterable>
-                </el-cascader>
-              </el-form-item>
-              <el-form-item label="服务器">
-                <el-input v-model="serversMap[formData.server_id]" :disabled="true"/>
-              </el-form-item>
-              <el-form-item label="发布时间">
-                <el-input v-model="formData.create_at" :disabled="true"/>
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click=" cancelShow() ">取消</el-button>
-              </el-form-item>
-            </el-form>
+          <el-dialog title="商品详情" :visible.sync="showDialog" :lock-scroll="false" :append-to-body="true">
+            <div style="width: 50%; height: 100%; float: left;">
+              <el-form
+                :model="formData"
+                ref="dataForm"
+                label-position="left"
+                label-width="90px"
+                style="margin-left:50px;"
+              >
+                <el-form-item label="商品名" prop="name">
+                  <el-input v-model="formData.name" :disabled="true"/>
+                </el-form-item>
+                <el-form-item label="卖家 id" prop="seller_id">
+                  <el-input v-model="formData.seller_id" :disabled="true"/>
+                </el-form-item>
+                <el-form-item label="价格" prop="price">
+                  <el-input v-model="formData.price" :disabled="true"/>
+                </el-form-item>
+                <el-form-item label="道具">
+                  <el-cascader
+                    v-model="formData.tool_id"
+                    :options="tools"
+                    :props="{ expandTrigger: 'hover' }"
+                    :disabled="true" clearable filterable>
+                  </el-cascader>
+                </el-form-item>
+                <el-form-item label="服务器">
+                  <el-input v-model="serversMap[formData.server_id]" :disabled="true"/>
+                </el-form-item>
+                <el-form-item label="发布时间">
+                  <el-input v-model="formData.create_at" :disabled="true"/>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="showDialog = false">取消</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+            <div style="width: 50%; height: 100%; float: left;">
+              <el-image :src="imgDomain + formData.img_uri" :preview-src-list="[imgDomain + formData.img_uri]" style="width: 100%; height: 100%"></el-image>
+            </div>
           </el-dialog>
-          <el-dialog title="编辑商品" :visible.sync="editDialogVisible">
+          <el-dialog title="编辑商品" :visible.sync="editDialogVisible" :lock-scroll="false" :append-to-body="true">
             <el-form
               :model="formData"
               ref="dataForm"
@@ -218,15 +223,12 @@ export default {
       const server = this.selectedServer
       const tool = this.selectedTool
       const toolLen = this.selectedTool.length
-      this.filteredInfos = this.infos
+      this.filteredInfos = JSON.parse(JSON.stringify(this.infos))
       this.filteredInfos = this.filteredInfos.filter(info => {
-        if (server !== 'all') {
-          return info.server_id + '' === server
+        if (server !== 'all' && info.server_id + '' !== server) {
+          return false
         }
-        if (toolLen > 0) {
-          return info.tool_id + '' === tool[toolLen - 1]
-        }
-        return true
+        return !(toolLen > 0 && info.tool_id + '' !== tool[toolLen - 1])
       })
     },
     orderInfos () {
@@ -251,17 +253,15 @@ export default {
       storage.logout()
       this.loginUser = ''
     },
-    cancelShow () {
-      this.showDialog = false
-      this.formData = {}
-    },
     showInfo (info) {
+      console.log('show info id: ', info.id)
       this.showDialog = true
-      this.formData = info
+      this.formData = JSON.parse(JSON.stringify(info))
       this.formData.tool_id = this.toolsMap[info.tool_id]
       this.formData.create_at = info.create_at.substr(0, 10)
     },
     editInfo (info) {
+      console.log('edit info id: ', info.id)
       this.editDialogVisible = true
       this.formData = JSON.parse(JSON.stringify(info))
       this.formData.tool_id = this.toolsMap[info.tool_id]
@@ -269,7 +269,7 @@ export default {
     },
     deleteInfo (id) {
       console.log('delete id: ', id)
-      this.formData.id = id
+      this.formData = {'id': id}
       this.$alert('确认删除该商品?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -342,7 +342,6 @@ export default {
       fd.append('name', that.formData.name)
       fd.append('id', that.formData.id)
       updateItem(fd).then(res => {
-        console.log('update success:', res)
         if (res.data === 'OK') {
           this.$message({
             type: 'info',
@@ -372,8 +371,7 @@ export default {
   watch: {
     orderBy: 'orderInfos',
     selectedServer: 'filterInfos',
-    selectedTool: 'filterInfos',
-    selectedSubTool: 'filterInfos'
+    selectedTool: 'filterInfos'
   }
 }
 </script>
@@ -431,10 +429,11 @@ export default {
   padding: 3px;
   list-style: none;
   margin-right: 15px;
+  margin-top: 15px;
   border: 1px solid #eee;
 }
 
-.el-image {
+.info_img {
   width: 200px;
   height: 150px;
 }

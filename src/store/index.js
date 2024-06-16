@@ -1,10 +1,8 @@
 var storage = {
   setToken (value) {
-    console.log('set token: ', value)
     localStorage.setItem('token', value)
   },
   getToken () {
-    console.log('get token: ', localStorage.getItem('token'))
     return localStorage.getItem('token')
   },
   getTokenExpire () {
