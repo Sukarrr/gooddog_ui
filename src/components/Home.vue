@@ -3,7 +3,7 @@
     <!-- Logo -->
     <img src="../assets/logo.png" alt="Logo" class="logo">
     <el-container>
-      <h2 style="text-align: center;">三国交易网</h2>
+      <h2 style="text-align: center;">好狗三国</h2>
       <el-header>
         <div v-if="loginUser !== ''" class="login"><p>管理员 {{loginUser}}</p></div>
         <div class="login">
@@ -12,11 +12,11 @@
         </div>
       </el-header>
       <el-main>
-        <el-container style="border: 1px solid #eee">
+        <el-container style="border: 1px solid #dcd1fa; background-color: rgba(209,198,224,0.23);">
           <el-header class="header">
             <el-form ref="dataForm" label-position="left" label-width="90px">
               <el-form-item label="" prop="server" class="filter">
-                <el-menu mode="horizontal" default-active="all" @select="handleServerSelect">
+                <el-menu mode="horizontal" default-active="all" @select="handleServerSelect" class="servers">
                   <el-menu-item index="all">所有服务器</el-menu-item>
                   <el-menu-item v-for="server in servers" :key="server.id" :index="server.id">{{server.name}}</el-menu-item>
                 </el-menu>
@@ -26,7 +26,7 @@
           <el-main>
             <el-container style="border: 1px solid #eee">
               <!-- 左侧侧边栏 -->
-              <el-aside width="200px">
+              <el-aside width="200px" height="100%" style="background-color: #ffffff">
                 <el-menu default-active="all" @select="handleToolSelect">
                   <el-menu-item index="all">所有道具</el-menu-item>
                   <template v-for="tool in tools">
@@ -44,7 +44,7 @@
                   </template>
                 </el-menu>
               </el-aside>
-              <el-main>
+              <el-main style="background-color: rgba(249,248,235,0.55)">
                 <div style="width: 100%; display: flex; justify-content: space-between;">
                   <div class="upload">
                     <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="toUpload">新增商品</el-button>
@@ -100,8 +100,8 @@
                     </div>
                   </div>
                   <span slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="showDialog = false">取消</el-button>
-              </span>
+                    <el-button type="primary" @click="showDialog = false">取消</el-button>
+                  </span>
                 </el-dialog>
                 <el-dialog title="编辑商品" :visible.sync="editDialogVisible" :lock-scroll="false" :append-to-body="true">
                   <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left: 50px;">
@@ -128,11 +128,11 @@
                     <el-form-item label="更新时间">
                       <el-input v-model="formData.update_at" disabled />
                     </el-form-item>
-                    <el-form-item>
-                      <el-button @click="handleClear">清空</el-button>
-                      <el-button type="primary" @click="updateData">确定</el-button>
-                    </el-form-item>
                   </el-form>
+                  <span slot="footer" class="dialog-footer">
+                    <el-button @click="handleClear">清空</el-button>
+                    <el-button type="primary" @click="updateData">确定</el-button>
+                  </span>
                 </el-dialog>
               </el-main>
             </el-container>
@@ -371,13 +371,23 @@ export default {
 </script>
 
 <style scoped>
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .container {
-  padding: 20px; /* 设置整体内边距 */
+  min-height: 100vh; /* Ensure container covers full viewport height */
+  padding: 20px; /* Example: Add padding for spacing */
+  box-sizing: border-box; /* Ensure padding and border are included in total width/height */
+  /* Add any other styles as needed */
 }
 
 .logo {
   position: absolute; /* 绝对定位，使得 logo 在左上角 */
-  top: 20px; /* 距离顶部距离 */
+  top: 40px; /* 距离顶部距离 */
   left: 20px; /* 距离左侧距离 */
   width: 100px; /* Logo 宽度 */
   height: auto; /* 自适应高度 */
@@ -412,6 +422,21 @@ export default {
   border: 1px solid #eee;
 }
 
+.servers {
+  background-color: transparent !important;
+}
+
+.servers .el-menu-item,
+.servers .el-submenu,
+.servers .el-submenu__title {
+  background-color: transparent !important;
+}
+
+.servers .el-menu-item.is-active,
+.servers .el-submenu.is-active .el-submenu__title {
+  background-color: transparent !important;
+}
+
 .filter {
   display: flex;
   margin-left: 20px;
@@ -421,12 +446,14 @@ export default {
 .header {
   flex: 1;
   padding: 10px;
+  background-color: transparent !important;
 }
 
 .items {
   display: flex;
   flex-wrap: wrap;
   padding: 10px;
+  background-color: transparent !important;
 }
 
 .items ul {
@@ -440,6 +467,7 @@ export default {
   margin-right: 15px;
   margin-top: 15px;
   border: 1px solid #eee;
+  background-color: #ffffff;
 }
 
 .info_img {

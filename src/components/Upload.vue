@@ -1,3 +1,4 @@
+<script src="../store/index.js"></script>
 <template>
   <div class="tab-container">
     <div>
