@@ -6,8 +6,10 @@ axios.defaults.timeout = 5000 // 超时时间：5s
 axios.defaults.withCredentials = true// 允许跨域
 // Content-Type 响应头
 axios.defaults.headers.post['Content-Type'] = 'application/json; charset=utf-8'
+
+export const baseURL = 'http://118.89.70.29:8083'
 // 访问基础url
-axios.defaults.baseURL = 'http://localhost:8080'
+axios.defaults.baseURL = baseURL
 
 // 请求拦截器
 axios.interceptors.request.use(

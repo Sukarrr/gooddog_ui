@@ -145,6 +145,7 @@
 
 <script>
 import { getAllItems, deleteItem, updateItem } from '../api/index'
+import { baseURL } from '../api/http'
 import { Servers, Tools } from '../../static/data'
 import storage from '../store/index'
 
@@ -165,7 +166,7 @@ export default {
       editDialogVisible: false,
       toolsMap: [],
       serversMap: [],
-      imgDomain: 'http://localhost:8080/api/v1/image/'
+      imgDomain: baseURL + '/api/v1/image/'
     }
   },
   created () {
