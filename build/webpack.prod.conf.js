@@ -48,7 +48,7 @@ const webpackConfig = merge(baseWebpackConfig, {
       filename: utils.assetsPath('css/[name].[contenthash].css'),
       // Setting the following option to `false` will not extract CSS from codesplit chunks.
       // Their CSS will instead be inserted dynamically with style-loader when the codesplit chunk has been loaded by webpack.
-      // It's currently set to `true` because we are seeing that sourcemaps are included in the codesplit bundle as well when it's `false`, 
+      // It's currently set to `true` because we are seeing that sourcemaps are included in the codesplit bundle as well when it's `false`,
       // increasing file size: https://github.com/vuejs-templates/webpack/issues/1110
       allChunks: true,
     }),
@@ -145,5 +145,49 @@ if (config.build.bundleAnalyzerReport) {
   const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
   webpackConfig.plugins.push(new BundleAnalyzerPlugin())
 }
+
+webpackConfig.module.rules.push(
+  {
+    test: /\.(png|jpe?g|gif|svg)$/i,
+    use: [
+      {
+        loader: 'file-loader',
+        options: {
+          name: 'static/img/[name].[hash:7].[ext]',
+        }
+      },
+      {
+        loader: 'image-webpack-loader',
+        options: {
+          mozjpeg: {
+            progressive: true,
+            quality: 50  // 调整 JPEG 压缩质量
+          },
+          optipng: {
+            enabled: true,
+            optimizationLevel: 7  // 调整 PNG 优化级别
+          },
+          pngquant: {
+            quality: [0.5, 0.7],  // 调整 PNG 压缩质量
+            speed: 1  // 调整 PNG 压缩速度，1 为最慢但压缩最优
+          },
+          gifsicle: {
+            interlaced: false,
+            optimizationLevel: 3  // 调整 GIF 优化级别
+          },
+          svgo: {
+            plugins: [
+              { removeViewBox: false },  // 保留 viewBox 属性
+              { removeEmptyAttrs: true }  // 移除空属性
+            ]
+          },
+          webp: {
+            quality: 75  // 调整 WebP 压缩质量
+          }
+        }
+      }
+    ]
+  }
+)
 
 module.exports = webpackConfig

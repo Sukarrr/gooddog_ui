@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <!-- Logo -->
-    <img src="../assets/logo.png" alt="Logo" class="logo">
+    <img :src="logo" alt="Logo" class="logo">
     <el-container>
       <h2 style="text-align: center;">好狗三国</h2>
       <el-header>
@@ -148,6 +148,7 @@ import { getAllItems, deleteItem, updateItem } from '../api/index'
 import { baseURL } from '../api/http'
 import { Servers, Tools } from '../../static/data'
 import storage from '../store/index'
+import logo from '../assets/logo.png'
 
 export default {
   name: 'Home',
@@ -166,7 +167,8 @@ export default {
       editDialogVisible: false,
       toolsMap: [],
       serversMap: [],
-      imgDomain: baseURL + '/api/v1/image/'
+      imgDomain: baseURL + '/api/v1/image/',
+      logo: logo
     }
   },
   created () {
