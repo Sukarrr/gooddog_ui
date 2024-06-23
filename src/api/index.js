@@ -30,6 +30,19 @@ export const deleteItem = (params) => post(`api/v1/items/delete`, params)
 // login
 export const login = (params) => post(`api/v1/users/login`, params)
 
+export function preloadImages (imageUrls) {
+  const promises = imageUrls.map(url => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.src = url
+      img.onload = resolve
+      img.onerror = reject
+    })
+  })
+
+  return Promise.all(promises)
+}
+
 // 下载音乐【异步请求】
 // export const download = (url) => Axios({
 //   method: 'get',

@@ -144,7 +144,7 @@
 </template>
 
 <script>
-import { getAllItems, deleteItem, updateItem } from '../api/index'
+import { getAllItems, deleteItem, updateItem, preloadImages } from '../api/index'
 import { baseURL } from '../api/http'
 import { Servers, Tools } from '../../static/data'
 import storage from '../store/index'
@@ -177,6 +177,16 @@ export default {
     }
     this.fetchInfos()
     this.fetchToolServersMap()
+    // 提取图片URL并预加载
+    let infos = [...this.infos]
+    const imageUrls = infos.map(info => this.imgDomain + info.img_uri)
+    preloadImages(imageUrls)
+      .then(() => {
+        console.log('Images preloaded successfully')
+      })
+      .catch(err => {
+        console.error('Error preloading images', err)
+      })
   },
   methods: {
     fetchToolServersMap () {
