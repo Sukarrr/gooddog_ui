@@ -1,18 +1,18 @@
 <template>
   <div class="container">
     <!-- Logo -->
-    <img :src="logo" alt="Logo" class="logo">
+    <img :src="cdnURL+'/gooddog/logo.7c2fee0.png'" alt="Logo" class="logo">
     <el-container>
       <h2 style="text-align: center;">好狗三国</h2>
-      <el-header>
+      <el-header style="flex-shrink: 0; z-index: 1;">
         <div v-if="loginUser !== ''" class="login"><p>管理员 {{loginUser}}</p></div>
         <div class="login">
-          <el-button v-if="loginUser !== ''" size="mini" @click.native="handleLogOut">退出</el-button>
-          <el-button v-else icon="el-icon-user-solid" size="mini" border="none" @click.native="handleLogin">管理员登录</el-button>
+          <el-button v-if="loginUser !== ''" size="medium" @click.native="handleLogOut">退出</el-button>
+          <el-button v-else icon="el-icon-user-solid" size="medium" border="none" @click.native="handleLogin">管理员登录</el-button>
         </div>
       </el-header>
-      <el-main>
-        <el-container style="border: 1px solid #dcd1fa; background-color: rgba(209,198,224,0.23);">
+      <el-main style="flex: 1;display: flex;flex-direction: column;">
+        <el-container style="border: 1px solid #dcd1fa; background-color: rgba(209,198,224,0.23); flex: 1; display: flex; flex-direction: column;">
           <el-header class="header">
             <el-form ref="dataForm" label-position="left" label-width="90px">
               <el-form-item label="" prop="server" class="filter">
@@ -47,7 +47,7 @@
               <el-main style="background-color: rgba(249,248,235,0.55)">
                 <div style="width: 100%; display: flex; justify-content: space-between;">
                   <div class="upload">
-                    <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="toUpload">新增商品</el-button>
+                    <el-button v-if="loginUser !== ''" type="primary" size="medium" @click.native="uploadInfo">新增商品</el-button>
                   </div>
                   <div class="order">
                     <el-button-group>
@@ -62,7 +62,7 @@
                 <div class="items">
                   <ul>
                     <li v-for="info in filteredInfos" :key="info.id">
-                      <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]" class="info_img"></el-image>
+                      <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]" class="info_img" fit="contain"></el-image>
                       <h1><b>¥{{ info.price }}</b></h1>
                       <p>{{ info.name }}</p>
                       <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="editInfo(info)">编辑</el-button>
@@ -78,7 +78,7 @@
                         <el-form-item label="商品名" prop="name">
                           <el-input v-model="formData.name" disabled />
                         </el-form-item>
-                        <el-form-item label="卖家 id" prop="seller_id">
+                        <el-form-item label="联系商人" prop="seller_id">
                           <el-input v-model="formData.seller_id" disabled />
                         </el-form-item>
                         <el-form-item label="价格" prop="price">
@@ -108,7 +108,7 @@
                     <el-form-item label="商品名" prop="name">
                       <el-input v-model="formData.name" />
                     </el-form-item>
-                    <el-form-item label="卖家 id" prop="seller_id">
+                    <el-form-item label="联系商人" prop="seller_id">
                       <el-input v-model="formData.seller_id" />
                     </el-form-item>
                     <el-form-item label="价格" prop="price">
@@ -134,6 +134,54 @@
                     <el-button type="primary" @click="updateData">确定</el-button>
                   </span>
                 </el-dialog>
+                <el-dialog title="新增商品" :visible.sync="uploadDialogVisible" :lock-scroll="false" :append-to-body="true">
+                  <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left: 50px;">
+                    <el-form-item label="商品名" prop="name">
+                      <el-input v-model="formData.name" />
+                    </el-form-item>
+                    <el-form-item label="联系商人" prop="seller_id">
+                      <el-input v-model="formData.seller_id" />
+                    </el-form-item>
+                    <el-form-item label="价格" prop="price">
+                      <el-input v-model="formData.price" />
+                    </el-form-item>
+                    <el-form-item label="道具">
+                      <el-cascader
+                        v-model="formData.tool_id"
+                        :options="tools"
+                        :props="{ expandTrigger: 'hover' }" clearable filterable>
+                      </el-cascader>
+                    </el-form-item>
+                    <el-form-item label="服务器">
+                      <el-radio-group v-model="formData.server_id">
+                        <el-radio-button
+                          v-for="server in servers"
+                          :key="server.id"
+                          :label="server.id">
+                          {{server.name}}
+                        </el-radio-button>
+                      </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="商品图片">
+                      <el-upload
+                        action=""
+                        :http-request="UnloadImg"
+                        :before-upload="beforeUpload"
+                        :on-remove="handleRemove"
+                        :on-exceed="handleExceed"
+                        accept="image/png,image/gif,image/jpg,image/jpeg"
+                        :file-list="fileList"
+                        list-type="picture">
+                        <el-button size="small" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">不超过1MB</div>
+                      </el-upload>
+                    </el-form-item>
+                  </el-form>
+                  <span slot="footer" class="dialog-footer">
+                    <el-button @click="handleClear">清空</el-button>
+                    <el-button type="primary" @click="createData">确定</el-button>
+                  </span>
+                </el-dialog>
               </el-main>
             </el-container>
           </el-main>
@@ -144,11 +192,10 @@
 </template>
 
 <script>
-import { getAllItems, deleteItem, updateItem, preloadImages } from '../api/index'
-import { baseURL } from '../api/http'
+import {getAllItems, deleteItem, updateItem, preloadImages, createItem} from '../api/index'
+import { cdnURL } from '../api/http'
 import { Servers, Tools } from '../../static/data'
 import storage from '../store/index'
-import logo from '../assets/logo.png'
 
 export default {
   name: 'Home',
@@ -165,10 +212,11 @@ export default {
       filteredInfos: [],
       showDialog: false,
       editDialogVisible: false,
+      uploadDialogVisible: false,
       toolsMap: [],
       serversMap: [],
-      imgDomain: baseURL + '/api/v1/image/',
-      logo: logo
+      cdnURL: cdnURL,
+      imgDomain: cdnURL + '/gooddog/image/'
     }
   },
   created () {
@@ -189,6 +237,7 @@ export default {
       })
   },
   methods: {
+    // 初始化
     fetchToolServersMap () {
       this.tools.forEach(tool => {
         if (tool.children) {
@@ -219,6 +268,7 @@ export default {
           console.log(err)
         })
     },
+    // 点击筛选
     handleToolSelect (index) {
       this.selectedTool = index
       this.filterInfos()
@@ -241,6 +291,7 @@ export default {
         return info.tool_id + '' === tool
       })
     },
+    // 排序
     orderInfos () {
       const order = this.orderBy
       this.filteredInfos = this.filteredInfos.sort((a, b) => {
@@ -258,6 +309,7 @@ export default {
         }
       })
     },
+    // 登录 登出
     handleLogin () {
       this.$router.push({name: `Login`})
     },
@@ -277,6 +329,13 @@ export default {
       this.editDialogVisible = true
       this.formData = { ...info }
       this.formData.tool_id = this.toolsMap[info.tool_id]
+    },
+    uploadInfo () {
+      this.formData = {
+        server_id: this.formData.server_id,
+        seller_id: this.formData.seller_id
+      }
+      this.uploadDialogVisible = true
     },
     deleteInfo (id) {
       this.formData = { 'id': id }
@@ -312,14 +371,6 @@ export default {
         this.formData = {}
       })
     },
-    checkForm () {
-      const { formData } = this
-      if (!formData.name || !formData.seller_id || !formData.price || !formData.tool_id || !formData.server_id || !formData.id) {
-        this.$message.error('请填写完整信息')
-        return false
-      }
-      return true
-    },
     handleClear () {
       const { formData } = this
       const createAt = formData.create_at
@@ -327,9 +378,12 @@ export default {
       this.formData = { 'create_at': createAt, 'update_at': updateAt }
     },
     updateData () {
-      if (!this.checkForm()) return
-      const fd = new FormData()
       const { formData } = this
+      if (!formData.name || !formData.seller_id || !formData.price || !formData.tool_id || !formData.server_id || !formData.id) {
+        this.$message.error('请填写完整信息')
+        return
+      }
+      const fd = new FormData()
       fd.append('server_id', formData.server_id)
       fd.append('tool_id', formData.tool_id[formData.tool_id.length - 1])
       fd.append('seller_id', formData.seller_id)
@@ -361,8 +415,78 @@ export default {
           })
         })
     },
-    toUpload () {
-      this.$router.push({ name: `Upload` })
+    // 上传图片
+    createData () {
+      const { formData } = this
+      if (!formData.name ||
+        !formData.seller_id ||
+        !formData.price ||
+        !formData.tool_id ||
+        !formData.server_id ||
+        !formData.file) {
+        this.$message({
+          type: 'error',
+          message: '请填写完整信息'
+        })
+        return
+      }
+      const formDataCopy = {...formData}
+      let fd = new FormData()
+      fd.append('server_id', formData.server_id)
+      fd.append('tool_id', formData.tool_id[formData.tool_id.length - 1])
+      fd.append('seller_id', formData.seller_id)
+      fd.append('price', formData.price)
+      fd.append('name', formData.name)
+      fd.append('file', formData.file)
+      createItem(fd).then(res => {
+        if (res.data === 'OK') {
+          this.$message({
+            type: 'info',
+            message: '保存成功'
+          })
+          this.formData = {
+            server_id: formDataCopy.server_id,
+            seller_id: formDataCopy.seller_id
+          }
+        } else {
+          this.$message({
+            type: 'error',
+            message: '保存失败'
+          })
+          this.formData = {...formDataCopy}
+        }
+      }).catch(err => {
+        this.$message({
+          type: 'error',
+          message: '保存失败: ' + err.message
+        })
+        this.formData = {...formDataCopy}
+      })
+    },
+    beforeUpload (file) {
+      const limit = file.size / 1024 / 1024 <= 1
+      if (limit) {
+        return true
+      }
+      this.$message.error('上传图片大小不能超过 1MB!')
+      return false
+    },
+    handleExceed (files, fileList) {
+      this.$message.warning(`当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
+    },
+    handleRemove () {
+      URL.revokeObjectURL(this.imageUrl)
+      this.imageUrl = ''
+      this.formData.file = ''
+      this.fileList = []
+    },
+    UnloadImg (file) {
+      this.imageUrl = URL.createObjectURL(file.file)
+      this.formData.file = file.file
+      this.fileList.push({
+        name: file.file.name,
+        url: this.imageUrl
+      })
     }
   },
   watch: {
@@ -401,7 +525,7 @@ body {
 .logo {
   position: absolute; /* 绝对定位，使得 logo 在左上角 */
   top: 40px; /* 距离顶部距离 */
-  left: 20px; /* 距离左侧距离 */
+  left: 60px; /* 距离左侧距离 */
   width: 100px; /* Logo 宽度 */
   height: auto; /* 自适应高度 */
 }
