@@ -1,200 +1,217 @@
 <template>
-  <div class="container">
-    <!-- Logo -->
-    <img :src="cdnURL+'/gooddog/logo.7c2fee0.png'" alt="Logo" class="logo">
-    <el-container>
-      <h2 style="text-align: center;">好狗三国</h2>
-      <el-header style="flex-shrink: 0; z-index: 1;">
-        <div v-if="loginUser !== ''" class="login"><p>管理员 {{loginUser}}</p></div>
-        <div class="login">
-          <el-button v-if="loginUser !== ''" size="medium" @click.native="handleLogOut">退出</el-button>
-          <el-button v-else icon="el-icon-user-solid" size="medium" border="none" @click.native="handleLogin">管理员登录</el-button>
-        </div>
-      </el-header>
-      <el-main style="flex: 1;display: flex;flex-direction: column;">
-        <el-container style="border: 1px solid #dcd1fa; background-color: rgba(209,198,224,0.23); flex: 1; display: flex; flex-direction: column;">
-          <el-header class="header">
-            <el-form ref="dataForm" label-position="left" label-width="90px">
-              <el-form-item label="" prop="server" class="filter">
-                <el-menu mode="horizontal" default-active="all" @select="handleServerSelect" class="servers">
-                  <el-menu-item index="all">所有服务器</el-menu-item>
-                  <el-menu-item v-for="server in servers" :key="server.id" :index="server.id">{{server.name}}</el-menu-item>
-                </el-menu>
-              </el-form-item>
-            </el-form>
-          </el-header>
-          <el-main>
-            <el-container style="border: 1px solid #eee">
-              <!-- 左侧侧边栏 -->
-              <el-aside width="200px" height="100%" style="background-color: #ffffff">
-                <el-menu default-active="all" @select="handleToolSelect">
-                  <el-menu-item index="all">所有道具</el-menu-item>
-                  <template v-for="tool in tools">
-                    <el-submenu v-if="tool.children && tool.children.length > 0" :key="tool.value" :index="tool.value">
-                      <template slot="title">{{ tool.label }}</template>
-                      <template v-for="child in tool.children">
-                        <el-submenu v-if="child.children && child.children.length > 0" :key="child.value" :index="child.value">
-                          <template slot="title">{{ child.label }}</template>
-                          <el-menu-item v-for="subChild in child.children" :key="subChild.value" :index="subChild.value">{{ subChild.label }}</el-menu-item>
-                        </el-submenu>
-                        <el-menu-item v-else :key="child.value" :index="child.value">{{ child.label }}</el-menu-item>
-                      </template>
+    <el-container style="border: 1px solid #dcd1fa; background-color: rgba(209,198,224,0.23); display: flex; flex-direction: column;">
+      <el-row>
+        <el-col :span="8">
+          <img :src="cdnURL+'/gooddog/logo.7c2fee0.png'" alt="Logo" class="logo">
+        </el-col>
+        <el-col :span="8">
+          <div class="title-container">
+            <h1 class="title">好狗三国</h1>
+          </div>
+        </el-col>
+        <el-col :span="8">
+          <div class="login">
+            <p v-if="loginUser !== ''" style="margin-right: 10px;">管理员 {{loginUser}}</p>
+            <el-button v-if="loginUser !== ''" size="medium" @click.native="handleLogOut">退出</el-button>
+            <el-button v-else icon="el-icon-user-solid" size="medium" border="none" @click.native="handleLogin">管理员登录</el-button>
+          </div>
+        </el-col>
+      </el-row>
+      <el-form ref="dataForm" label-position="left" label-width="90px" style="display: flex;justify-content: center">
+        <el-form-item label="" prop="server" class="serverfilter">
+          <el-menu mode="horizontal" default-active="all" @select="handleServerSelect" class="servers">
+            <el-menu-item index="all">所有服务器</el-menu-item>
+            <el-menu-item v-for="server in servers" :key="server.id" :index="server.id">{{server.name}}</el-menu-item>
+          </el-menu>
+        </el-form-item>
+      </el-form>
+      <el-main>
+        <el-container style="border: 1px solid #eee">
+          <!-- 左侧侧边栏 -->
+          <el-aside width="200px" height="100%" style="background-color: #ffffff">
+            <el-menu default-active="all" @select="handleToolSelect">
+              <el-menu-item index="all">所有道具</el-menu-item>
+              <template v-for="tool in tools">
+                <el-submenu v-if="tool.children && tool.children.length > 0" :key="tool.value" :index="tool.value">
+                  <template slot="title">{{ tool.label }}</template>
+                  <template v-for="child in tool.children">
+                    <el-submenu v-if="child.children && child.children.length > 0" :key="child.value" :index="child.value">
+                      <template slot="title">{{ child.label }}</template>
+                      <el-menu-item v-if="asideTools[child.value]" :key="asideTools[child.value].value" :index="asideTools[child.value].value">{{asideTools[child.value].label}}</el-menu-item>
+                      <el-menu-item v-for="subChild in child.children" :key="subChild.value" :index="subChild.value">{{ subChild.label }}</el-menu-item>
                     </el-submenu>
-                    <el-menu-item v-else :key="tool.value" :index="tool.value">{{ tool.label }}</el-menu-item>
+                    <el-menu-item v-else :key="child.value" :index="child.value">{{ child.label }}</el-menu-item>
                   </template>
-                </el-menu>
-              </el-aside>
-              <el-main style="background-color: rgba(249,248,235,0.55)">
-                <div style="width: 100%; display: flex; justify-content: space-between;">
-                  <div class="upload">
-                    <el-button v-if="loginUser !== ''" type="primary" size="medium" @click.native="uploadInfo">新增商品</el-button>
-                  </div>
-                  <div class="order">
-                    <el-button-group>
-                      <el-button v-for="item in orderByOptions" :key="item.value" :type="orderBy === item.value ? 'primary' : 'default'" size="mini" @click="orderBy = orderBy === item.value ? 0 : item.value">
-                        {{ item.label }}
-                        <i v-if="item.value === 1 || item.value === 3" class="el-icon-arrow-up"></i>
-                        <i v-else class="el-icon-arrow-down"></i>
-                      </el-button>
-                    </el-button-group>
-                  </div>
-                </div>
-                <div class="items">
-                  <ul>
-                    <li v-for="info in filteredInfos" :key="info.id">
-                      <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]" class="info_img" fit="contain"></el-image>
-                      <h1><b>¥{{ info.price }}</b></h1>
-                      <p>{{ info.name }}</p>
-                      <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="editInfo(info)">编辑</el-button>
-                      <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="deleteInfo(info.id)">删除</el-button>
-                      <el-button v-else type="primary" size="mini" @click.native="showInfo(info)">查看详情</el-button>
-                    </li>
-                  </ul>
-                </div>
-                <el-dialog title="商品详情" :visible.sync="showDialog" :lock-scroll="false" :append-to-body="true" :max-height="'90vh'">
-                  <div class="dialog-content">
-                    <div class="detail-left">
-                      <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px">
-                        <el-form-item label="商品名" prop="name">
-                          <el-input v-model="formData.name" disabled />
-                        </el-form-item>
-                        <el-form-item label="联系商人" prop="seller_id">
-                          <el-input v-model="formData.seller_id" disabled />
-                        </el-form-item>
-                        <el-form-item label="价格" prop="price">
-                          <el-input v-model="formData.price" disabled />
-                        </el-form-item>
-                        <el-form-item label="道具">
-                          <el-cascader v-model="formData.tool_id" :options="tools" :props="{ expandTrigger: 'hover' }" disabled clearable filterable></el-cascader>
-                        </el-form-item>
-                        <el-form-item label="服务器">
-                          <el-input v-model="serversMap[formData.server_id]" disabled />
-                        </el-form-item>
-                        <el-form-item label="发布时间">
-                          <el-input v-model="formData.create_at" disabled />
-                        </el-form-item>
-                      </el-form>
-                    </div>
-                    <div class="detail-right">
-                      <el-image :src="imgDomain + formData.img_uri" :preview-src-list="[imgDomain + formData.img_uri]" style="width: 100%; height: auto; border: 1px solid #ccc;"></el-image>
-                    </div>
-                  </div>
-                  <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" @click="showDialog = false">取消</el-button>
-                  </span>
-                </el-dialog>
-                <el-dialog title="编辑商品" :visible.sync="editDialogVisible" :lock-scroll="false" :append-to-body="true">
-                  <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left: 50px;">
+                </el-submenu>
+                <el-menu-item v-else :key="tool.value" :index="tool.value">{{ tool.label }}</el-menu-item>
+              </template>
+            </el-menu>
+          </el-aside>
+          <el-main style="background-color: rgba(249,248,235,0.55)">
+            <div style="width: 100%; display: flex; justify-content: space-between;">
+              <div class="upload">
+                <el-button v-if="loginUser !== ''" type="primary" size="medium" @click.native="uploadInfo">新增商品</el-button>
+              </div>
+              <div class="pricefilter">
+                <el-input v-model="fetchParam.minPrice" placeholder="最低价" type="number" min="0" style="width: 150px;"></el-input>
+                <el-input v-model="fetchParam.maxPrice" placeholder="最高价" type="number" min="0" style="width: 150px;"></el-input>
+                <el-button @click="filterInfos">筛选</el-button>
+              </div>
+              <div class="order">
+                <el-button-group>
+                  <el-button v-for="item in orderByOptions" :key="item.value" :type="fetchParam.order === item.value ? 'primary' : 'default'" size="mini" @click="fetchParam.order = fetchParam.order === item.value ? 0 : item.value">
+                    {{ item.label }}
+                    <i v-if="item.value === 1 || item.value === 3" class="el-icon-arrow-up"></i>
+                    <i v-else class="el-icon-arrow-down"></i>
+                  </el-button>
+                </el-button-group>
+              </div>
+            </div>
+            <div class="items">
+              <ul>
+                <li v-for="info in infos" :key="info.id">
+                  <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]" class="info_img" fit="contain"></el-image>
+                  <h1><b>¥{{ info.price }}</b></h1>
+                  <p>{{ info.name }}</p>
+                  <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="editInfo(info)">编辑</el-button>
+                  <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="deleteInfo(info.id)">删除</el-button>
+                  <el-button v-else type="primary" size="mini" @click.native="showInfo(info)">查看详情</el-button>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <span slot="footer">
+                <el-pagination
+                  @size-change="handleSizeChange"
+                  @current-change="handleCurrentChange"
+                  :current-page="fetchParam.page"
+                  :page-sizes="[3, 5, 10]"
+                  :page-size="fetchParam.pageSize"
+                  layout="total, sizes, prev, pager, next, jumper"
+                  :total="total">
+                </el-pagination>
+              </span>
+            </div>
+            <el-dialog title="商品详情" :visible.sync="showDialog" :lock-scroll="false" :append-to-body="true" :max-height="'90vh'">
+              <div class="dialog-content">
+                <div class="detail-left">
+                  <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px">
                     <el-form-item label="商品名" prop="name">
-                      <el-input v-model="formData.name" />
+                      <el-col>{{formData.name}}</el-col>
                     </el-form-item>
                     <el-form-item label="联系商人" prop="seller_id">
-                      <el-input v-model="formData.seller_id" />
+                      <el-col>{{formData.seller_id}}</el-col>
                     </el-form-item>
                     <el-form-item label="价格" prop="price">
-                      <el-input v-model="formData.price" />
+                      <el-col>{{formData.price}}</el-col>
                     </el-form-item>
                     <el-form-item label="道具">
-                      <el-cascader v-model="formData.tool_id" :options="tools" :props="{ expandTrigger: 'hover' }" clearable filterable></el-cascader>
+                      <el-col>{{formData.tool_id}}</el-col>
                     </el-form-item>
                     <el-form-item label="服务器">
-                      <el-radio-group v-model="formData.server_id">
-                        <el-radio-button v-for="server in servers" :key="server.id" :label="server.id">{{ server.name }}</el-radio-button>
-                      </el-radio-group>
+                      <el-col>{{serversMap[formData.server_id]}}</el-col>
                     </el-form-item>
                     <el-form-item label="发布时间">
-                      <el-input v-model="formData.create_at" disabled />
-                    </el-form-item>
-                    <el-form-item label="更新时间">
-                      <el-input v-model="formData.update_at" disabled />
+                      <el-col>{{formData.create_at}}</el-col>
                     </el-form-item>
                   </el-form>
-                  <span slot="footer" class="dialog-footer">
-                    <el-button @click="handleClear">清空</el-button>
-                    <el-button type="primary" @click="updateData">确定</el-button>
-                  </span>
-                </el-dialog>
-                <el-dialog title="新增商品" :visible.sync="uploadDialogVisible" :lock-scroll="false" :append-to-body="true">
-                  <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left: 50px;">
-                    <el-form-item label="商品名" prop="name">
-                      <el-input v-model="formData.name" />
-                    </el-form-item>
-                    <el-form-item label="联系商人" prop="seller_id">
-                      <el-input v-model="formData.seller_id" />
-                    </el-form-item>
-                    <el-form-item label="价格" prop="price">
-                      <el-input v-model="formData.price" />
-                    </el-form-item>
-                    <el-form-item label="道具">
-                      <el-cascader
-                        v-model="formData.tool_id"
-                        :options="tools"
-                        :props="{ expandTrigger: 'hover' }" clearable filterable>
-                      </el-cascader>
-                    </el-form-item>
-                    <el-form-item label="服务器">
-                      <el-radio-group v-model="formData.server_id">
-                        <el-radio-button
-                          v-for="server in servers"
-                          :key="server.id"
-                          :label="server.id">
-                          {{server.name}}
-                        </el-radio-button>
-                      </el-radio-group>
-                    </el-form-item>
-                    <el-form-item label="商品图片">
-                      <el-upload
-                        action=""
-                        :http-request="UnloadImg"
-                        :before-upload="beforeUpload"
-                        :on-remove="handleRemove"
-                        :on-exceed="handleExceed"
-                        accept="image/png,image/gif,image/jpg,image/jpeg"
-                        :file-list="fileList"
-                        list-type="picture">
-                        <el-button size="small" type="primary">点击上传</el-button>
-                        <div slot="tip" class="el-upload__tip">不超过1MB</div>
-                      </el-upload>
-                    </el-form-item>
-                  </el-form>
-                  <span slot="footer" class="dialog-footer">
-                    <el-button @click="handleClear">清空</el-button>
-                    <el-button type="primary" @click="createData">确定</el-button>
-                  </span>
-                </el-dialog>
-              </el-main>
-            </el-container>
+                </div>
+                <div class="detail-right">
+                  <el-image :src="imgDomain + formData.img_uri" :preview-src-list="[imgDomain + formData.img_uri]" style="width: 100%; height: auto; border: 1px solid #ccc;"></el-image>
+                </div>
+              </div>
+              <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="showDialog = false">取消</el-button>
+              </span>
+            </el-dialog>
+            <el-dialog title="编辑商品" :visible.sync="editDialogVisible" :lock-scroll="false" :append-to-body="true">
+              <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left: 50px;">
+                <el-form-item label="商品名" prop="name">
+                  <el-input v-model="formData.name" />
+                </el-form-item>
+                <el-form-item label="联系商人" prop="seller_id">
+                  <el-input v-model="formData.seller_id" />
+                </el-form-item>
+                <el-form-item label="价格" prop="price">
+                  <el-input v-model="formData.price" />
+                </el-form-item>
+                <el-form-item label="道具">
+                  <el-cascader v-model="formData.tool_id" :options="tools" :props="{ expandTrigger: 'hover' }" clearable filterable></el-cascader>
+                </el-form-item>
+                <el-form-item label="服务器">
+                  <el-radio-group v-model="formData.server_id">
+                    <el-radio-button v-for="server in servers" :key="server.id" :label="server.id">{{ server.name }}</el-radio-button>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="发布时间">
+                  <el-input v-model="formData.create_at" disabled />
+                </el-form-item>
+                <el-form-item label="更新时间">
+                  <el-input v-model="formData.update_at" disabled />
+                </el-form-item>
+              </el-form>
+              <span slot="footer" class="dialog-footer">
+                <el-button @click="handleClear">清空</el-button>
+                <el-button type="primary" @click="updateData">确定</el-button>
+              </span>
+            </el-dialog>
+            <el-dialog title="新增商品" :visible.sync="uploadDialogVisible" :lock-scroll="false" :append-to-body="true">
+              <el-form :model="formData" ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left: 50px;">
+                <el-form-item label="商品名" prop="name">
+                  <el-input v-model="formData.name" />
+                </el-form-item>
+                <el-form-item label="联系商人" prop="seller_id">
+                  <el-input v-model="formData.seller_id" />
+                </el-form-item>
+                <el-form-item label="价格" prop="price">
+                  <el-input v-model="formData.price" />
+                </el-form-item>
+                <el-form-item label="道具">
+                  <el-cascader
+                    v-model="formData.tool_id"
+                    :options="tools"
+                    :props="{ expandTrigger: 'hover' }" clearable filterable>
+                  </el-cascader>
+                </el-form-item>
+                <el-form-item label="服务器">
+                  <el-radio-group v-model="formData.server_id">
+                    <el-radio-button
+                      v-for="server in servers"
+                      :key="server.id"
+                      :label="server.id">
+                      {{server.name}}
+                    </el-radio-button>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="商品图片">
+                  <el-upload
+                    action=""
+                    :http-request="UnloadImg"
+                    :before-upload="beforeUpload"
+                    :on-remove="handleRemove"
+                    :file-list="fileList"
+                    accept="image/png,image/gif,image/jpg,image/jpeg,image/jfif"
+                    list-type="picture">
+                    <el-button size="small" type="primary">点击上传</el-button>
+                    <div slot="tip" class="el-upload__tip">不超过1MB</div>
+                  </el-upload>
+                </el-form-item>
+              </el-form>
+              <span slot="footer" class="dialog-footer">
+                <el-button @click="handleClear">清空</el-button>
+                <el-button type="primary" @click="createData">确定</el-button>
+              </span>
+            </el-dialog>
           </el-main>
         </el-container>
       </el-main>
     </el-container>
-  </div>
 </template>
 
 <script>
-import {getAllItems, deleteItem, updateItem, preloadImages, createItem} from '../api/index'
+import {getAllItems, deleteItem, updateItem, preloadImages, createItem, getInfosTotal} from '../api/index'
 import { cdnURL } from '../api/http'
-import { Servers, Tools } from '../../static/data'
+import { Servers, Tools, AsideTools, Orders } from '../../static/data'
 import storage from '../store/index'
 
 export default {
@@ -203,13 +220,20 @@ export default {
     return {
       formData: {},
       loginUser: '',
-      selectedServer: 'all',
+      fetchParam: {
+        server: 'all',
+        tool: '',
+        minPrice: null,
+        maxPrice: null,
+        order: 2,
+        page: 1,
+        pageSize: 3
+      },
+      total: 1000,
       servers: Servers,
-      selectedTool: '',
-      orderBy: 2,
       tools: Tools,
+      asideTools: AsideTools,
       infos: [],
-      filteredInfos: [],
       showDialog: false,
       editDialogVisible: false,
       uploadDialogVisible: false,
@@ -223,6 +247,7 @@ export default {
     if (storage.getUsername()) {
       this.loginUser = storage.getUsername()
     }
+    this.getInfosTotal()
     this.fetchInfos()
     this.fetchToolServersMap()
     // 提取图片URL并预加载
@@ -238,20 +263,28 @@ export default {
   },
   methods: {
     // 初始化
+    getInfosTotal () {
+      getInfosTotal(this.getFetchInfosParams())
+        .then(res => {
+          this.total = res.data
+        }).catch(err => {
+          console.log(err)
+        })
+    },
     fetchToolServersMap () {
       this.tools.forEach(tool => {
         if (tool.children) {
           tool.children.forEach(subTool => {
             if (subTool.children) {
               subTool.children.forEach(subSubTool => {
-                this.toolsMap[subSubTool.value] = [tool.value, subTool.value, subSubTool.value]
+                this.toolsMap[subSubTool.value] = [tool, subTool, subSubTool]
               })
             } else {
-              this.toolsMap[subTool.value] = [tool.value, subTool.value]
+              this.toolsMap[subTool.value] = [tool, subTool]
             }
           })
         } else {
-          this.toolsMap[tool.value] = [tool.value]
+          this.toolsMap[tool.value] = [tool]
         }
       })
       this.servers.forEach(server => {
@@ -259,55 +292,39 @@ export default {
       })
     },
     fetchInfos () {
-      getAllItems('create_at', 'desc')
+      getAllItems(this.getFetchInfosParams())
         .then(res => {
           this.infos = res.data
-          this.filterInfos()
         })
         .catch(err => {
           console.log(err)
         })
     },
+    filterInfos () {
+      this.getInfosTotal()
+      this.fetchParam.page = 1
+      this.fetchInfos()
+    },
+    getFetchInfosParams () {
+      let params = {...Orders[this.fetchParam.order]}
+      params.filters = {
+        server_id: this.fetchParam.server,
+        tool_id: this.fetchParam.tool,
+        min_price: this.fetchParam.minPrice,
+        max_price: this.fetchParam.maxPrice
+      }
+      params.page = this.fetchParam.page
+      params.page_size = this.fetchParam.pageSize
+      return params
+    },
     // 点击筛选
     handleToolSelect (index) {
-      this.selectedTool = index
+      this.fetchParam.tool = index
       this.filterInfos()
     },
     handleServerSelect (index) {
-      this.selectedServer = index
+      this.fetchParam.server = index
       this.filterInfos()
-    },
-    filterInfos () {
-      const server = this.selectedServer
-      const tool = this.selectedTool
-      this.filteredInfos = JSON.parse(JSON.stringify(this.infos))
-      this.filteredInfos = this.filteredInfos.filter(info => {
-        if (server !== 'all' && info.server_id + '' !== server) {
-          return false
-        }
-        if (tool === '' || tool === 'all') {
-          return true
-        }
-        return info.tool_id + '' === tool
-      })
-    },
-    // 排序
-    orderInfos () {
-      const order = this.orderBy
-      this.filteredInfos = this.filteredInfos.sort((a, b) => {
-        switch (order) {
-          case 1:
-            return a.create_at < b.create_at ? -1 : 1
-          case 2:
-            return b.create_at < a.create_at ? -1 : 1
-          case 3:
-            return a.price - b.price
-          case 4:
-            return b.price - a.price
-          default:
-            return 0
-        }
-      })
     },
     // 登录 登出
     handleLogin () {
@@ -319,16 +336,23 @@ export default {
     },
     showInfo (info) {
       console.log('show info id: ', info.id)
-      this.showDialog = true
       this.formData = { ...info }
-      this.formData.tool_id = this.toolsMap[info.tool_id]
+      this.formData.tool_id = ''
+      for (let i = 0; i < this.toolsMap[info.tool_id].length; i++) {
+        this.formData.tool_id += this.toolsMap[info.tool_id][i].label + ' '
+      }
+      console.log('tool_id: ', this.formData.tool_id)
       this.formData.create_at = info.create_at.substr(0, 10)
+      this.showDialog = true
     },
     editInfo (info) {
       console.log('edit info id: ', info.id)
       this.editDialogVisible = true
       this.formData = { ...info }
-      this.formData.tool_id = this.toolsMap[info.tool_id]
+      this.formData.tool_id = []
+      for (let i = 0; i < this.toolsMap[info.tool_id].length; i++) {
+        this.formData.tool_id.push(this.toolsMap[info.tool_id][i].value)
+      }
     },
     uploadInfo () {
       this.formData = {
@@ -448,6 +472,7 @@ export default {
             server_id: formDataCopy.server_id,
             seller_id: formDataCopy.seller_id
           }
+          this.fetchInfos()
         } else {
           this.$message({
             type: 'error',
@@ -471,9 +496,6 @@ export default {
       this.$message.error('上传图片大小不能超过 1MB!')
       return false
     },
-    handleExceed (files, fileList) {
-      this.$message.warning(`当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
-    },
     handleRemove () {
       URL.revokeObjectURL(this.imageUrl)
       this.imageUrl = ''
@@ -487,12 +509,20 @@ export default {
         name: file.file.name,
         url: this.imageUrl
       })
+    },
+    // 分页
+    handleSizeChange (val) {
+      this.fetchParam.pageSize = val
+      this.fetchParam.page = 1
+      this.fetchInfos()
+    },
+    handleCurrentChange (val) {
+      this.fetchParam.page = val
+      this.fetchInfos()
     }
   },
   watch: {
-    orderBy: 'orderInfos',
-    selectedServer: 'filterInfos',
-    selectedTool: 'filterInfos'
+    'fetchParam.order': 'fetchInfos'
   },
   computed: {
     orderByOptions () {
@@ -508,6 +538,7 @@ export default {
 </script>
 
 <style scoped>
+@import url('../assets/css/font.css');
 html,
 body {
   height: 100%;
@@ -515,25 +546,31 @@ body {
   padding: 0;
 }
 
-.container {
-  min-height: 100vh; /* Ensure container covers full viewport height */
-  padding: 20px; /* Example: Add padding for spacing */
-  box-sizing: border-box; /* Ensure padding and border are included in total width/height */
-  /* Add any other styles as needed */
+.logo {
+  display: flex;
+  margin-top: 40px;
+  margin-left: 40px;
+  justify-content: flex-start;
+  width: 120px; /* Logo 宽度 */
+  height: auto; /* 自适应高度 */
 }
 
-.logo {
-  position: absolute; /* 绝对定位，使得 logo 在左上角 */
-  top: 40px; /* 距离顶部距离 */
-  left: 60px; /* 距离左侧距离 */
-  width: 100px; /* Logo 宽度 */
-  height: auto; /* 自适应高度 */
+.title-container {
+  text-align: center;
+}
+
+.title {
+  text-align: center;
+  margin-top: 60px;
+  font-family: 'gooddog',sans-serif;
+  font-size: 40px;
 }
 
 .login {
   display: flex;
+  margin-top: 40px;
+  margin-right: 40px;
   justify-content: flex-end;
-  margin-right: 20px;
 }
 
 .upload {
@@ -541,7 +578,6 @@ body {
   justify-content: flex-start;
   margin-right: 20px;
   margin-top: 20px;
-  width: 50%;
 }
 
 .order {
@@ -574,22 +610,25 @@ body {
   background-color: transparent !important;
 }
 
-.filter {
+.serverfilter {
   display: flex;
   margin-left: 20px;
   margin-top: 20px;
 }
 
-.header {
-  flex: 1;
-  padding: 10px;
-  background-color: transparent !important;
+.pricefilter {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .items {
   display: flex;
   flex-wrap: wrap;
-  padding: 10px;
+  padding: 0px;
   background-color: transparent !important;
 }
 
@@ -601,8 +640,8 @@ body {
 .items li {
   padding: 3px;
   list-style: none;
-  margin-right: 15px;
-  margin-top: 15px;
+  margin-right: 10px;
+  margin-top: 10px;
   border: 1px solid #eee;
   background-color: #ffffff;
 }
@@ -626,9 +665,5 @@ body {
 .detail-right {
   width: 50%;
   padding: 20px;
-}
-
-.el-dialog__body {
-  padding: 0;
 }
 </style>

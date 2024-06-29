@@ -1,3 +1,21 @@
+export const Orders = {
+  1: {
+    order_by: 'create_at',
+    order_type: 'asc'
+  },
+  2: {
+    order_by: 'create_at',
+    order_type: 'desc'
+  },
+  3: {
+    order_by: 'price',
+    order_type: 'asc'
+  },
+  4: {
+    order_by: 'price',
+    order_type: 'desc'
+  }
+}
 export const Servers = [
   {id: '1', name: '桃园结义'},
   {id: '2', name: '群雄逐鹿'},
@@ -10,6 +28,13 @@ export const Servers = [
   {id: '9', name: '抚琴退敌'},
   {id: '10', name: '其它'}
 ]
+
+export const AsideTools = {
+  '26': {value: '[27,28,29,30,31,32]', label: '全部物系'},
+  '33': {value: '[34,35,36,37,38]', label: '全部法系'},
+  '39': {value: '[40,41]', label: '全部遁甲'},
+  '42': {value: '[43,44,45,46,47]', label: '全部技能'}
+}
 
 // 不要改 value 的值，因为 value 是用来做查询的
 export const Tools = [

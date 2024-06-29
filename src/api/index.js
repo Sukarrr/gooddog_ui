@@ -1,7 +1,9 @@
-import {get, post} from './http'
+import {post} from './http'
+
+export const getInfosTotal = (params) => post(`api/v1/items/total`, params)
 
 // 根据指定排序查询所有商品列表
-export const getAllItems = (orderBy, orderType) => get(`api/v1/items/info?order_by=${orderBy}&order_type=${orderType}`)
+export const getAllItems = (params) => post(`api/v1/items/info`, params)
 
 // 返回当前的评论列表【根据传参发送不同请求】
 // export const getAllComment = (type, id) => {
