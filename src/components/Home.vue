@@ -51,8 +51,8 @@
                 <el-button v-if="loginUser !== ''" type="primary" size="medium" @click.native="uploadInfo">新增商品</el-button>
               </div>
               <div class="pricefilter">
-                <el-input v-model="fetchParam.minPrice" placeholder="最低价" type="number" min="0" style="width: 150px;"></el-input>
-                <el-input v-model="fetchParam.maxPrice" placeholder="最高价" type="number" min="0" style="width: 150px;"></el-input>
+                <el-input v-model="fetchParam.minPrice" placeholder="最低价" type="number" min="0" style="width: 150px;" clearable></el-input>
+                <el-input v-model="fetchParam.maxPrice" placeholder="最高价" type="number" min="0" style="width: 150px;" clearable></el-input>
                 <el-button @click="filterInfos">筛选</el-button>
               </div>
               <div class="order">
