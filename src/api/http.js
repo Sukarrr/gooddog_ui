@@ -8,7 +8,7 @@ axios.defaults.withCredentials = true// 允许跨域
 axios.defaults.headers.post['Content-Type'] = 'application/json; charset=utf-8'
 
 export const baseURL = 'http://118.89.70.29:8083'
-export const cdnURL = 'https://lhcos-d363c-1307527906.cos.ap-shanghai.myqcloud.com'
+export const cdnURL = 'https://lhcos-d363c-1307527906.cos.ap-shanghai.myqcloud.com/gooddog'
 // export const cdnURL = 'http://localhost:8080/api/v1/image'
 
 // 访问基础url

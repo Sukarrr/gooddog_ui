@@ -2,7 +2,7 @@
     <el-container style="border: 1px solid #dcd1fa; background-color: rgba(209,198,224,0.23); display: flex; flex-direction: column;">
       <el-row>
         <el-col :span="8">
-          <img :src="cdnURL+'/gooddog/logo.7c2fee0.png'" alt="Logo" class="logo">
+          <img :src="cdnURL+'/assets/logo.png'" alt="Logo" class="logo">
         </el-col>
         <el-col :span="8">
           <div class="title-container">
@@ -85,7 +85,7 @@
                   @size-change="handleSizeChange"
                   @current-change="handleCurrentChange"
                   :current-page="fetchParam.page"
-                  :page-sizes="[3, 5, 10]"
+                  :page-sizes="[30, 50, 100]"
                   :page-size="fetchParam.pageSize"
                   layout="total, sizes, prev, pager, next, jumper"
                   :total="total">
@@ -227,7 +227,7 @@ export default {
         maxPrice: null,
         order: 2,
         page: 1,
-        pageSize: 3
+        pageSize: 30
       },
       total: 1000,
       servers: Servers,
@@ -240,7 +240,7 @@ export default {
       toolsMap: [],
       serversMap: [],
       cdnURL: cdnURL,
-      imgDomain: cdnURL + '/gooddog/image/'
+      imgDomain: cdnURL + '/image/'
     }
   },
   created () {
@@ -538,7 +538,7 @@ export default {
 </script>
 
 <style scoped>
-@import url('../assets/css/font.css');
+@import url('https://lhcos-d363c-1307527906.cos.ap-shanghai.myqcloud.com/gooddog/assets/css/font.css');
 html,
 body {
   height: 100%;
