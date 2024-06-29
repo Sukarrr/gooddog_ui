@@ -5,9 +5,7 @@
           <img :src="cdnURL+'/assets/logo.png'" alt="Logo" class="logo">
         </el-col>
         <el-col :span="8">
-          <div class="title-container">
-            <h1 class="title">好狗三国</h1>
-          </div>
+          <img :src="cdnURL+'/assets/title.png'" alt="Title" class="title">
         </el-col>
         <el-col :span="8">
           <div class="login">
@@ -33,10 +31,10 @@
               <el-menu-item index="all">所有道具</el-menu-item>
               <template v-for="tool in tools">
                 <el-submenu v-if="tool.children && tool.children.length > 0" :key="tool.value" :index="tool.value">
-                  <template slot="title">{{ tool.label }}</template>
+                  <template slot="title"><span class="custom-submenu-title">{{ tool.label }}</span></template>
                   <template v-for="child in tool.children">
                     <el-submenu v-if="child.children && child.children.length > 0" :key="child.value" :index="child.value">
-                      <template slot="title">{{ child.label }}</template>
+                      <template slot="title"><span class="custom-submenu-title">{{ child.label }}</span></template>
                       <el-menu-item v-if="asideTools[child.value]" :key="asideTools[child.value].value" :index="asideTools[child.value].value">{{asideTools[child.value].label}}</el-menu-item>
                       <el-menu-item v-for="subChild in child.children" :key="subChild.value" :index="subChild.value">{{ subChild.label }}</el-menu-item>
                     </el-submenu>
@@ -72,10 +70,12 @@
                 <li v-for="info in infos" :key="info.id">
                   <el-image :src="imgDomain + info.img_uri" :preview-src-list="[imgDomain + info.img_uri]" class="info_img" fit="contain"></el-image>
                   <h1><b>¥{{ info.price }}</b></h1>
-                  <p>{{ info.name }}</p>
+                  <p class="items_p">
+                    {{ info.name }}
+                  </p>
                   <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="editInfo(info)">编辑</el-button>
                   <el-button v-if="loginUser !== ''" type="primary" size="mini" @click.native="deleteInfo(info.id)">删除</el-button>
-                  <el-button v-else type="primary" size="mini" @click.native="showInfo(info)">查看详情</el-button>
+                  <el-button v-else type="primary" size="mini" @click.native="showInfo(info)">交易详情</el-button>
                 </li>
               </ul>
             </div>
@@ -239,6 +239,7 @@ export default {
       uploadDialogVisible: false,
       toolsMap: [],
       serversMap: [],
+      fileList: [],
       cdnURL: cdnURL,
       imgDomain: cdnURL + '/image/'
     }
@@ -472,6 +473,7 @@ export default {
             server_id: formDataCopy.server_id,
             seller_id: formDataCopy.seller_id
           }
+          this.handleRemove()
           this.fetchInfos()
         } else {
           this.$message({
@@ -505,10 +507,10 @@ export default {
     UnloadImg (file) {
       this.imageUrl = URL.createObjectURL(file.file)
       this.formData.file = file.file
-      this.fileList.push({
+      this.fileList = [{
         name: file.file.name,
         url: this.imageUrl
-      })
+      }]
     },
     // 分页
     handleSizeChange (val) {
@@ -546,6 +548,19 @@ body {
   padding: 0;
 }
 
+.el-menu-item {
+  font-size: 16px !important;
+}
+
+.el-submenu__title,
+.custom-submenu-title {
+  font-size: 16px !important;
+}
+
+.el-submenu .el-menu-item {
+  font-size: 16px !important;
+}
+
 .logo {
   display: flex;
   margin-top: 40px;
@@ -555,15 +570,11 @@ body {
   height: auto; /* 自适应高度 */
 }
 
-.title-container {
-  text-align: center;
-}
-
 .title {
   text-align: center;
-  margin-top: 60px;
-  font-family: 'gooddog',sans-serif;
-  font-size: 40px;
+  margin-top: 40px;
+  width: 280px; /* Logo 宽度 */
+  height: auto; /* 自适应高度 */
 }
 
 .login {
@@ -640,10 +651,23 @@ body {
 .items li {
   padding: 3px;
   list-style: none;
+  width: 200px;
   margin-right: 10px;
   margin-top: 10px;
   border: 1px solid #eee;
   background-color: #ffffff;
+}
+
+.items_p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 3em;
+  line-height: 1.5em;
+  margin-top: 1px;
+  margin-bottom: 1px;
 }
 
 .info_img {
