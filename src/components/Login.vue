@@ -71,9 +71,10 @@ export default {
           this.$router.push({name: `Home`})
         })
         .catch(err => {
+          console.log(err)
           this.$message({
             type: 'error',
-            message: '用户名或密码错误, ' + err.message,
+            message: '用户名或密码错误',
             showClose: true
           })
         })
