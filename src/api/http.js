@@ -6,10 +6,12 @@ axios.defaults.timeout = 5000 // 超时时间：5s
 axios.defaults.withCredentials = true// 允许跨域
 // Content-Type 响应头
 axios.defaults.headers.post['Content-Type'] = 'application/json; charset=utf-8'
-
+// 线上
 export const baseURL = 'http://www.hogosg.cn'
 export const cdnURL = 'https://lhcos-d363c-1307527906.cos.ap-shanghai.myqcloud.com/gooddog'
-// export const cdnURL = 'http://localhost:8080/api/v1/image'
+// 本地
+// export const baseURL = 'http://localhost:8080'
+// export const cdnURL = 'http://localhost:8080/api/v1'
 
 // 访问基础url
 axios.defaults.baseURL = baseURL
@@ -91,6 +93,21 @@ export function get (url, config = {}) {
 export function post (url, data = {}, config = {}) {
   return new Promise((resolve, reject) => {
     axios.post(url, data, config)
+      .then(response => {
+        resolve(response.data)
+      })
+      .catch(err => {
+        reject(err)
+      })
+  })
+}
+
+/**
+ * 封装delete请求
+ */
+export function del (url, config = {}) {
+  return new Promise((resolve, reject) => {
+    axios.delete(url, config)
       .then(response => {
         resolve(response.data)
       })

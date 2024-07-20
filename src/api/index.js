@@ -1,4 +1,4 @@
-import {post} from './http'
+import {post, del} from './http'
 
 export const getInfosTotal = (params) => post(`api/v1/items/total`, params)
 
@@ -27,7 +27,7 @@ export const updateItem = (params) => post(`api/v1/items/update`, params, {
   }
 })
 
-export const deleteItem = (params) => post(`api/v1/items/delete`, params)
+export const deleteItem = (id) => del(`api/v1/items/delete/${id}`)
 
 // login
 export const login = (params) => post(`api/v1/users/login`, params)
