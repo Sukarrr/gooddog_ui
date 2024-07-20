@@ -474,7 +474,7 @@ export default {
       const updateAt = formData.update_at
       const images = formData.images
       const id = formData.id
-      this.formData = { 'create_at': createAt, 'update_at': updateAt, "images": images, "id": id }
+      this.formData = { 'create_at': createAt, 'update_at': updateAt, 'images': images, 'id': id }
     },
     // 更新商品
     updateData () {
@@ -718,14 +718,23 @@ html, body {
 }
 
 .upload {
+  width: 150px; /* Set fixed width */
   justify-content: flex-start;
 }
 
+.pricefilter {
+  width: 400px; /* Set fixed width */
+  justify-content: flex-start;
+  gap: 10px; /* Space between inputs and button */
+}
+
 .order {
+  width: 200px; /* Set fixed width */
   justify-content: flex-end;
 }
 
 .refresh {
+  width: 60px; /* Set fixed width */
   justify-content: flex-end;
 }
 

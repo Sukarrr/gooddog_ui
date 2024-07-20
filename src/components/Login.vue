@@ -11,6 +11,7 @@
               v-model="form.username"
               clearable
               placeholder="请输入账号"
+              @keydown.native="handleKeydown"
             ></el-input>
           </el-form-item>
           <el-form-item prop="password">
@@ -19,6 +20,7 @@
               clearable
               placeholder="请输入密码"
               show-password
+              @keydown.native="handleKeydown"
             ></el-input>
           </el-form-item>
         </el-form>
@@ -78,6 +80,12 @@ export default {
             showClose: true
           })
         })
+    },
+    handleKeydown (event) {
+      if (event.key === 'Enter') {
+        this.login() // 调用登录方法
+        event.preventDefault() // 防止默认行为，例如表单提交
+      }
     }
   }
 }
