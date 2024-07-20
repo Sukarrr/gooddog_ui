@@ -727,7 +727,7 @@ html, body {
   justify-content: flex-end;
 }
 
-.upload, .order, .pricefilter .el-button {
+.upload, .order, .pricefilter, .login .el-button {
   height: 40px; /* Set button height */
   line-height: 40px; /* Center text vertically */
   font-size: 14px; /* Adjust font size if needed */
