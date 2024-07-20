@@ -472,7 +472,9 @@ export default {
       const { formData } = this
       const createAt = formData.create_at
       const updateAt = formData.update_at
-      this.formData = { 'create_at': createAt, 'update_at': updateAt }
+      const images = formData.images
+      const id = formData.id
+      this.formData = { 'create_at': createAt, 'update_at': updateAt, "images": images, "id": id }
     },
     // 更新商品
     updateData () {
